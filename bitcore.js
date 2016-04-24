@@ -46,7 +46,6 @@ requireWhenAccessed('BinaryParser', './util/BinaryParser');
 requireWhenAccessed('Address', './lib/Address');
 requireWhenAccessed('AuthMessage', './lib/AuthMessage');
 requireWhenAccessed('HierarchicalKey', './lib/HierarchicalKey');
-requireWhenAccessed('BIP21', './lib/BIP21');
 Object.defineProperty(module.exports, 'BIP32', {
   get: function() {
     console.log('BIP32 is deprecated. Use bitcore.HierarchicalKey instead.');

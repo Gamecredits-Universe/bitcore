@@ -16,7 +16,6 @@ var modules = [
   'lib/AuthMessage',
   'lib/Base58',
   'lib/HierarchicalKey',
-  'lib/BIP21',
   'lib/BIP39',
   'lib/BIP39WordlistEn',
   'lib/Block',
@@ -74,7 +73,6 @@ var createBitcore = function(opts) {
   //modules included in "all" but not included in "main" bundle
   if (opts.includemain) {
     submodules = JSON.parse(JSON.stringify(modules));
-    submodules.splice(submodules.indexOf('lib/BIP21'), 1);
     submodules.splice(submodules.indexOf('lib/BIP39'), 1);
     submodules.splice(submodules.indexOf('lib/BIP39WordlistEn'), 1);
     submodules.splice(submodules.indexOf('lib/PayPro'), 1);
@@ -83,7 +81,7 @@ var createBitcore = function(opts) {
     submodules.splice(submodules.indexOf('lib/PeerManager'), 1);
     submodules.splice(submodules.indexOf('lib/NetworkMonitor'), 1);
     var assert = require('assert');
-    assert(submodules.length == modules.length - 8);
+    assert(submodules.length == modules.length - 7);
   }
 
   if (opts.submodules) {

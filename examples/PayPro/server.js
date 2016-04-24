@@ -15,7 +15,6 @@ var fs = require('fs');
 var path = require('path');
 var qs = require('querystring');
 var crypto = require('crypto');
-var assert = require('assert');
 
 // Disable strictSSL
 process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
@@ -36,6 +35,10 @@ var TransactionBuilder = bitcore.TransactionBuilder;
  * Variables
  */
 
+var isNode = !argv.b && !argv.browser;
+
+var app = express();
+
 var x509 = {
   priv: fs.readFileSync(__dirname + '/../../test/data/x509.key'),
   pub: fs.readFileSync(__dirname + '/../../test/data/x509.pub'),
@@ -47,14 +50,6 @@ var server = https.createServer({
   key: fs.readFileSync(__dirname + '/../../test/data/x509.key'),
   cert: fs.readFileSync(__dirname + '/../../test/data/x509.crt')
 });
-
-server.options = argv;
-
-server.setOptions = function(options) {
-  server.options = argv = options;
-};
-
-var app = express();
 
 /**
  * Ignore Cache Headers
@@ -76,18 +71,12 @@ app.use(function(req, res, next) {
   };
 
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', [
-    'Host',
-    'Connection',
-    'Content-Length',
-    'Accept',
-    'Origin',
-    'User-Agent',
-    'Content-Type',
-    'Accept-Encoding',
-    'Accept-Language'
-  ].join(','));
+
+  if (req.method === 'OPTIONS') {
+    res.setHeader('Access-Control-Allow-Methods', 'OPTIONS,GET,PUT,POST,PATCH,DELETE');
+    res.setHeader('Access-Control-Allow-Headers', req.headers['access-control-request-headers']);
+    return res.send(200);
+  }
 
   res.setHeader('Accept', PayPro.PAYMENT_CONTENT_TYPE);
 
@@ -135,70 +124,45 @@ app.use('/-/pay', function(req, res, next) {
 
 app.uid = 0;
 
-app.get('/-/request', function(req, res, next) {
+app.post('/-/request', function(req, res, next) {
   print('Received payment "request" from %s.', req.socket.remoteAddress);
 
   var outputs = [];
 
-  [2000, 1000, 10000].forEach(function(value) {
+  [2000, 1000].forEach(function(value) {
     var po = new PayPro();
     po = po.makeOutput();
-
     // number of satoshis to be paid
     po.set('amount', value);
-
     // a TxOut script where the payment should be sent. similar to OP_CHECKSIG
-
-    // Instead of creating it ourselves:
-    // if (!argv.pubkey && !argv.privkey && !argv.address) {
-    //   //argv.pubkey = '3730febcba04bad0cd476cfb820f9c37d7466fd9';
-    //   argv.pubkey = 'd96f46d7379c0f82fb6c47cdd0ba04babcfe3037'
-    // }
-
-    if (argv.pubkey || argv.privkey || argv.address) {
-      var pubKey;
-      if (argv.pubkey) {
-        pubKey = new Buffer(argv.pubkey, 'hex');
-      } else if (argv.privkey) {
-        pubKey = bitcore.Key.recoverPubKey(new Buffer(argv.privkey)).toCompressedPubKey();
-      } else if (argv.address) {
-        pubKey = bitcore.Base58Check.decode(new Buffer(argv.address));
-      }
-      var address = bitcore.Address.fromPubKey(pubKey, 'testnet');
-      var scriptPubKey = address.getScriptPubKey();
-      assert.equal(scriptPubKey.isPubkeyHash(), true);
-      po.set('script', scriptPubKey.getBuffer());
-    } else {
-      po.set('script', new Buffer([
-        118, // OP_DUP
-        169, // OP_HASH160
-        76,  // OP_PUSHDATA1
-        20,  // number of bytes
-        55,
-        48,
-        254,
-        188,
-        186,
-        4,
-        186,
-        208,
-        205,
-        71,
-        108,
-        251,
-        130,
-        15,
-        156,
-        55,
-        215,
-        70,
-        111,
-        217,
-        136, // OP_EQUALVERIFY
-        172  // OP_CHECKSIG
-      ]));
-    }
-
+    po.set('script', new Buffer([
+      118, // OP_DUP
+      169, // OP_HASH160
+      76,  // OP_PUSHDATA1
+      20,  // number of bytes
+      55,
+      48,
+      254,
+      188,
+      186,
+      4,
+      186,
+      208,
+      205,
+      71,
+      108,
+      251,
+      130,
+      15,
+      156,
+      55,
+      215,
+      70,
+      111,
+      217,
+      136, // OP_EQUALVERIFY
+      172  // OP_CHECKSIG
+    ]));
     outputs.push(po.message);
   });
 
@@ -299,40 +263,36 @@ app.post('/-/pay', function(req, res, next) {
     return ptx;
   });
 
-  if (!argv['no-tx']) {
-    (function retry() {
-      var timeout = setTimeout(function() {
-        if (conn) {
-          transactions.forEach(function(tx) {
-            var id = tx.getHash().toString('hex');
-            print('');
-            print('Sending transaction with txid: %s', id);
-            print(tx.getStandardizedObject());
+  (function retry() {
+    var timeout = setTimeout(function() {
+      if (conn) {
+        transactions.forEach(function(tx) {
+          var id = tx.getHash().toString('hex');
+          print('');
+          print('Sending transaction with txid: %s', id);
+          print(tx.getStandardizedObject());
 
-            print('Broadcasting transaction...');
-
-            var pending = 1;
-            peerman.on('ack', function listener() {
-              if (!--pending) {
-                peerman.removeListener('ack', listener);
-                clearTimeout(timeout);
-                print('Transaction sent to peer successfully.');
-                res.send(ack);
-              }
-            });
-            conn.sendTx(tx);
+          var pending = 1;
+          peerman.on('ack', function listener() {
+            if (!--pending) {
+              peerman.removeListener('ack', listener);
+              clearTimeout(timeout);
+              print('Transaction sent to peer successfully.');
+            }
           });
-        } else {
-          print('No BTC network connection. Retrying...');
-          conn = peerman.getActiveConnection();
-          retry();
-        }
-      }, 1000);
-    })();
-  } else {
-    print('Broadcasting transaction...');
-    res.send(ack);
-  }
+
+          print('Broadcasting transaction...');
+          conn.sendTx(tx);
+        });
+      } else {
+        print('No BTC network connection. Retrying...');
+        conn = peerman.getActiveConnection();
+        retry();
+      }
+    }, 1000);
+  })();
+
+  res.send(ack);
 });
 
 /**
@@ -345,7 +305,7 @@ var peerman = new bitcore.PeerManager({
   network: 'testnet'
 });
 
-peerman.peerDiscovery = argv.d || argv.discovery || false;
+peerman.peerDiscovery = false;
 
 peerman.addPeer(new bitcore.Peer('testnet-seed.alexykot.me', 18333));
 peerman.addPeer(new bitcore.Peer('testnet-seed.bitcoin.petertodd.org', 18333));
@@ -410,29 +370,22 @@ function error() {
 
 server.on('request', app);
 server.app = app;
-server.port = 8080;
-server.isNode = true;
+server.port = +argv.p || +argv.port || 8080;
 
-setTimeout(function() {
-  server.port = argv.p = argv.port = +argv.p || +argv.port || 8080;
-  server.isNode = !argv.b && !argv.browser;
-  if (argv.s || argv.server || argv.l || argv.listen) {
-    server.listen(server.port, function(addr) {
-      print('Listening on port %s.', server.port);
-    });
-    return;
-  }
-  if (!module.parent || path.basename(module.parent.filename) === 'index.js') {
-    server.listen(server.port, function(addr) {
-      print('Listening on port %s.', server.port);
-      if (!server.isNode) return;
-      var customer = require('./customer');
-      customer.sendPayment(function(err) {
-        if (err) return error(err.message);
-        customer.print('Payment sent successfully.');
-      });
-    });
-  }
-}, 1);
+if (argv.s) {
+  server.listen(server.port);
+  return;
+}
 
-module.exports = server;
+if (!module.parent || path.basename(module.parent.filename) === 'index.js') {
+  server.listen(server.port, function(addr) {
+    if (!isNode) return;
+    var customer = require('./customer');
+    customer.sendPayment(function(err) {
+      if (err) return error(err.message);
+      customer.print('Payment sent successfully.');
+    });
+  });
+} else {
+  module.exports = server;
+}

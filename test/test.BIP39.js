@@ -6,8 +6,6 @@ var bitcore = bitcore || require('../bitcore');
 var BIP39 = bitcore.BIP39;
 var BIP39WordlistEn = bitcore.BIP39WordlistEn;
 
-var ON_TRAVIS = typeof(process) != 'undefined' && (process.env.TRAVIS || process.env.CI);
-
 describe('BIP39', function() {
   // From python reference code, formatting unchanged
   var bip39_vectors = {
@@ -149,7 +147,8 @@ describe('BIP39', function() {
 
     //do not run these slow tests on TRAVIS which often fails
     var vectors = bip39_vectors['english'];
-    if (!ON_TRAVIS) {
+    var process = process || null;
+    if (!process || (!process.env.TRAVIS && !process.env.CI)) {
       for (var v = 0 ; v < vectors.length ; v++) {
         (function(v){
           it('should pass test vector ' + v, function() {

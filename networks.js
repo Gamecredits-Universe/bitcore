@@ -6,31 +6,27 @@ var hex = function(hex) {
 
 exports.livenet = {
   name: 'livenet',
-  magic: hex('f9beb4d9'),
-  addressVersion: 0x00,
+  magic: hex('fbc0b6db'),
+  addressVersion: 0x26,
   privKeyVersion: 128,
   P2SHVersion: 5,
   hkeyPublicVersion: 0x0488b21e,
   hkeyPrivateVersion: 0x0488ade4,
   genesisBlock: {
-    hash: hex('6FE28C0AB6F1B372C1A6A246AE63F74F931E8365E15A089C68D6190000000000'),
-    merkle_root: hex('3BA3EDFD7A7B12B27AC72C3E67768F617FC81BC3888A51323A9FB8AA4B1E5E4A'),
+    hash: hex('ee305ff5e1e48b735bb1cd77dcd28d2252a5b94ddad4f71afa0f9aee255fec91'),
+    merkle_root: hex('294475a4f15fad9fbff4e96399f8a71b2b7e8d2d6dadc8b4f46441a199db49d8'),
     height: 0,
-    nonce: 2083236893,
+    nonce: 2084565393,
     version: 1,
     prev_hash: buffertools.fill(new Buffer(32), 0),
-    timestamp: 1231006505,
-    bits: 486604799,
+    timestamp: 1392757140,
+    bits: 504365040,
   },
   dnsSeeds: [
-    'seed.bitcoin.sipa.be',
-    'dnsseed.bluematt.me',
-    'dnsseed.bitcoin.dashjr.org',
-    'seed.bitcoinstats.com',
-    'seed.bitnodes.io',
-    'bitseed.xf2.org'
+    '5.196.70.166',
+    'dns.gmcseed1.acidpool.com'
   ],
-  defaultClientPort: 8333
+  defaultClientPort: 40002
 };
 
 exports.mainnet = exports.livenet;
