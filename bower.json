@@ -1,10 +1,10 @@
 {
   "name": "bitcore",
-  "main": "./bitcore.min.js",
-  "version": "0.13.5",
+  "main": "browser/bundle.js",
+  "version": "0.1.34",
   "homepage": "http://bitcore.io",
   "authors": [
-    "BitPay, Inc."
+    "Ryan X. Charles (<ryan@bitpay.com>)"
   ],
   "description": "A pure, powerful core for your bitcoin project.",
   "moduleType": [
@@ -19,12 +19,8 @@
   "license": "MIT",
   "ignore": [
     "**/.*",
-    "CONTRIBUTING.md",
-    "gulpfile.js",
-    "lib",
-    "index.js",
-    "karma.conf.js",
-    "npm-shrinkwrap.json",
-    "test"
+    "node_modules",
+    "bower_components",
+    "tests"
   ]
 }

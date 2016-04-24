@@ -1,88 +1,141 @@
 Bitcore
 =======
 
-[![NPM Package](https://img.shields.io/npm/v/bitcore.svg?style=flat-square)](https://www.npmjs.org/package/bitcore)
-[![Build Status](https://img.shields.io/travis/bitpay/bitcore.svg?branch=master&style=flat-square)](https://travis-ci.org/bitpay/bitcore)
+[![Build Status](https://travis-ci.org/bitpay/bitcore.svg?branch=master)](https://travis-ci.org/bitpay/bitcore)
+[![Coverage Status](https://img.shields.io/coveralls/bitpay/bitcore.svg)](https://coveralls.io/r/bitpay/bitcore)
 
-Infrastructure to build Bitcoin and blockchain-based applications for the next generation of financial technology.
+A pure, powerful core for your bitcoin project.
 
-**Note:** If you're looking for the Bitcore Library please see: https://github.com/bitpay/bitcore-lib
+Bitcore is a complete, native interface to the Bitcoin network, and provides the core functionality needed to develop apps for bitcoin.
 
-## Getting Started
+#Principles
 
-Before you begin you'll need to have Node.js v0.12 installed. There are several options for installation. One method is to use [nvm](https://github.com/creationix/nvm) to easily switch between different versions, or download directly from [Node.js](https://nodejs.org/).
+Bitcoin is a powerful new peer-to-peer platform for the next generation of financial technology. The decentralized nature of the Bitcoin network allows for highly resilient bitcoin infrastructure, and the developer community needs reliable, open-source tools to implement bitcoin apps and services.
 
-```bash
-npm install -g bitcore
+**Bitcore unchains developers from fallible, centralized APIs, and provides the tools to interact with the real Bitcoin network.**
+
+#Get Started
+
+Bitcore runs on [node](http://nodejs.org/), and can be installed via [npm](https://npmjs.org/):
+
+```
+npm install bitcore
 ```
 
-Spin up a full node and join the network:
+It is a collection of objects useful to bitcoin applications; class-like idioms are enabled via [Soop](https://github.com/bitpay/soop). In most cases, a developer will require the object's class directly. For instance:
 
-```bash
-npm install -g bitcore
-bitcored
 ```
-
-You can then view the Insight block explorer at the default location: `http://localhost:3001/insight`, and your configuration file will be found in your home directory at `~/.bitcore`.
-
-Create a transaction:
-```js
 var bitcore = require('bitcore');
-var transaction = new bitcore.Transaction();
-var transaction.from(unspent).to(address, amount);
-transaction.sign(privateKey);
+var Address = bitcore.Address;
+var Transaction = bitcore.Transaction;
+var PeerManager = bitcore.PeerManager;
 ```
 
-## Applications
+#Examples
 
-- [Node](https://github.com/bitpay/bitcore-node) - A full node with extended capabilities using Bitcoin Core
-- [Insight API](https://github.com/bitpay/insight-api) - A blockchain explorer HTTP API
-- [Insight UI](https://github.com/bitpay/insight) - A blockchain explorer web user interface
-- [Wallet Service](https://github.com/bitpay/bitcore-wallet-service) - A multisig HD service for wallets
-- [Wallet Client](https://github.com/bitpay/bitcore-wallet-client) - A client for the wallet service
-- [CLI Wallet](https://github.com/bitpay/bitcore-wallet) - A command-line based wallet client
-- [Angular Wallet Client](https://github.com/bitpay/angular-bitcore-wallet-client) - An Angular based wallet client
-- [Copay](https://github.com/bitpay/copay) - An easy-to-use, multiplatform, multisignature, secure bitcoin wallet
+Examples are provided [here](examples.md)
+Build the examples by installing and running gulp:
 
-## Libraries
+```
+npm install -g gulp
+gulp
+```
 
-- [Lib](https://github.com/bitpay/bitcore-lib) - All of the core Bitcoin primatives including transactions, private key management and others
-- [Payment Protocol](https://github.com/bitpay/bitcore-payment-protocol) - A protocol for communication between a merchant and customer
-- [P2P](https://github.com/bitpay/bitcore-p2p) - The peer-to-peer networking protocol
-- [Mnemonic](https://github.com/bitpay/bitcore-mnemonic) - Implements mnemonic code for generating deterministic keys
-- [Channel](https://github.com/bitpay/bitcore-channel) - Micropayment channels for rapidly adjusting bitcoin transactions
-- [Message](https://github.com/bitpay/bitcore-message) - Bitcoin message verification and signing
-- [ECIES](https://github.com/bitpay/bitcore-ecies) - Uses ECIES symmetric key negotiation from public keys to encrypt arbitrarily long data streams.
+Javascript files available at [/examples](/examples) folder.
 
-## Documentation
 
-The complete docs are hosted here: [bitcore documentation](http://bitcore.io/guide/). There's also a [bitcore API reference](http://bitcore.io/api/) available generated from the JSDocs of the project, where you'll find low-level details on each bitcore utility.
+#Security
 
-- [Read the Developer Guide](http://bitcore.io/guide/)
-- [Read the API Reference](http://bitcore.io/api/)
+Please use at your own risk.
 
-To get community assistance and ask for help with implementation questions, please use our [community forums](http://bitpaylabs.com/c/bitcore).
+Bitcore is still under heavy development and not quite ready for "drop-in" production use. If you find a security issue, please email security@bitcore.io.
 
-## Security
+#Contributing
 
-We're using Bitcore in production, as are [many others](http://bitcore.io#projects), but please use common sense when doing anything related to finances! We take no responsibility for your implementation decisions.
+Bitcore needs some developer love. Please send pull requests for bug fixes, code optimization, and ideas for improvement.
 
-If you find a security issue, please email security@bitpay.com.
+#Browser support
 
-## Contributing
+## Building the browser bundle
 
-Please send pull requests for bug fixes, code optimization, and ideas for improvement. For more information on how to contribute, please refer to our [CONTRIBUTING](https://github.com/bitpay/bitcore/blob/master/CONTRIBUTING.md) file.
+To build bitcore full bundle for the browser (this is automatically executed after you run `npm install`):
 
-This will generate files named `bitcore.js` and `bitcore.min.js`.
+```
+node browser/build.js -a
+```
 
-You can also use our pre-generated files, provided for each release along with a PGP signature by one of the project's maintainers. To get them, checkout a release commit (for example, https://github.com/bitpay/bitcore/commit/e33b6e3ba6a1e5830a079e02d949fce69ea33546 for v0.12.6).
+This will generate a `browser/bundle.js` file which you can include in your HTML to use bitcore in the browser.
 
-To verify signatures, use the following PGP keys:
-- @braydonf: https://pgp.mit.edu/pks/lookup?op=get&search=0x9BBF07CAC07A276D
-- @pnagurny: https://pgp.mit.edu/pks/lookup?op=get&search=0x0909B33F0AA53013
+##Example browser usage
 
-## License
+From example/simple.html
+```
+<!DOCTYPE html>
+<html>
+  <body>
+    <script src="../browser/bundle.js"></script>
+    <script>
+      var bitcore = require('bitcore');
+      var Address = bitcore.Address;
+      var a = new Address('1KerhGhLn3SYBEQwby7VyVMWf16fXQUj5d');
+      console.log('1KerhGhLn3SYBEQwby7VyVMWf16fXQUj5d is valid? '+a.isValid());
+    </script>
+  </body>
+</html>
+```
 
-Code released under [the MIT license](https://github.com/bitpay/bitcore/blob/master/LICENSE).
+You can check a more complex usage example at examples/example.html.
 
-Copyright 2013-2015 BitPay, Inc. Bitcore is a trademark maintained by BitPay, Inc.
+## Generating a customized browser bundle
+
+To build the main bitcore bundle, run:
+
+```
+node browser/build.js -m
+```
+
+To build all features into the bitcore bundle (which will lead to a large filesize), run:
+
+```
+node browser/build.js -a
+```
+
+To generate a customized bitcore bundle, you can specify which submodules you want to include in it with the -s option:
+
+```
+node browser/build.js -s Transaction,Address
+```
+
+This will generate a `browser/bundle.js` containing only the Transaction and Address class, with all their dependencies.  Use this option if you are not using the whole bitcore library, to optimize the bundle size, script loading time, and general resource usage.
+
+## Tests
+
+Run tests in node:
+
+```
+mocha
+```
+
+Or generate tests in the browser:
+
+```
+grunt shell
+```
+
+And then open test/index.html in your browser.
+
+To run the code coverage report:
+
+```
+npm run-script coverage
+```
+
+And then open coverage/lcov-report/index.html in your browser.
+
+#License
+
+**Code released under [the MIT license](https://github.com/bitpay/bitcore/blob/master/LICENSE).**
+
+Copyright 2013-2014 BitPay, Inc. Bitcore is a trademark maintained by BitPay, Inc.
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/bitpay/bitcore/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
